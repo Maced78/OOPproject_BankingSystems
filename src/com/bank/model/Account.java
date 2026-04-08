@@ -16,7 +16,7 @@ public abstract class Account implements Identifiable, Transactional, InterestBe
     private final InterestStrategy interestStrategy;
 
     protected Account(String accountNumber, Customer owner, BigDecimal openingBalance, InterestStrategy interestStrategy) {
-        this.accountNumber = Objects.requireNonNull(accountNumber, "accountNumber cannot be null");
+        this.accountNumber = validateAccountNumber(accountNumber);
         this.owner = Objects.requireNonNull(owner, "owner cannot be null");
         this.balance = Objects.requireNonNull(openingBalance, "openingBalance cannot be null");
         this.interestStrategy = Objects.requireNonNull(interestStrategy, "interestStrategy cannot be null");
@@ -57,6 +57,9 @@ public abstract class Account implements Identifiable, Transactional, InterestBe
     @Override
     public BigDecimal applyMonthlyInterest() {
         BigDecimal interest = interestStrategy.calculate(balance);
+        if (interest.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BankingException("Calculated interest cannot be negative.");
+        }
         balance = balance.add(interest);
         return interest;
     }
@@ -69,6 +72,14 @@ public abstract class Account implements Identifiable, Transactional, InterestBe
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BankingException("Amount must be greater than zero.");
         }
+    }
+
+    private String validateAccountNumber(String accountNumber) {
+        String normalized = Objects.requireNonNull(accountNumber, "accountNumber cannot be null").trim();
+        if (normalized.isEmpty()) {
+            throw new BankingException("Account number cannot be empty.");
+        }
+        return normalized;
     }
 
     @Override

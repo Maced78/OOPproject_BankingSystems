@@ -17,7 +17,7 @@ public class CheckingAccount extends Account {
             InterestStrategy interestStrategy
     ) {
         super(accountNumber, owner, openingBalance, interestStrategy);
-        this.overdraftLimit = Objects.requireNonNull(overdraftLimit, "overdraftLimit cannot be null");
+        this.overdraftLimit = validateOverdraftLimit(overdraftLimit);
     }
 
     @Override
@@ -28,5 +28,13 @@ public class CheckingAccount extends Account {
             throw new BankingException("Overdraft limit exceeded.");
         }
         decreaseBalance(amount);
+    }
+
+    private BigDecimal validateOverdraftLimit(BigDecimal overdraftLimit) {
+        BigDecimal value = Objects.requireNonNull(overdraftLimit, "overdraftLimit cannot be null");
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BankingException("Overdraft limit cannot be negative.");
+        }
+        return value;
     }
 }

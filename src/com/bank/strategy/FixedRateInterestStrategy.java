@@ -1,5 +1,7 @@
 package com.bank.strategy;
 
+import com.bank.exception.BankingException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
@@ -8,7 +10,11 @@ public class FixedRateInterestStrategy implements InterestStrategy {
     private final BigDecimal monthlyRate;
 
     public FixedRateInterestStrategy(BigDecimal monthlyRate) {
-        this.monthlyRate = Objects.requireNonNull(monthlyRate, "monthlyRate cannot be null");
+        BigDecimal value = Objects.requireNonNull(monthlyRate, "monthlyRate cannot be null");
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BankingException("Monthly rate cannot be negative.");
+        }
+        this.monthlyRate = value;
     }
 
     @Override
